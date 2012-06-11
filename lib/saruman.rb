@@ -9,7 +9,7 @@ module Saruman
     
     def ask_question
       model_name = ask("Enter Name of model") { |q| q.default = "Post" }
-      model_table_name = ask("Enter Table Name of model") { |q| q.default = "post" }
+      model_table_name = ask("Enter Table Name of model") { |q| q.default = "blog_post" }
       model_fields_input = ask("Enter Model Fields") { |q| q.default = "title:string active:boolean blog_id:integer:index" }
       model_sql = parse_model_fields(model_fields_input)
       @question_answer = {:model_name => model_name, :model_name_lower => model_name.downcase, :model_table_name => model_table_name, :sql => model_sql}
