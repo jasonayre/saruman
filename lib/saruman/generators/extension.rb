@@ -5,16 +5,14 @@ module Saruman
   module Generators
     class Extension < Thor::Group
       include Thor::Actions
-      argument :extension_options, :type => :hash
-      # argument :namespace, :type => :string
-      # argument :name, :type => :string
+      argument :arguments, :type => :hash
       
       def self.source_root
         File.dirname(__FILE__) + "/extension/templates"
       end
       
       def copy_global_config
-        template("module.xml", "#{global_config_basepath}#{extension_options[:namespace]}_#{extension_options[:name]}.xml")
+        template("module.xml", "#{global_config_basepath}#{arguments[:namespace]}_#{arguments[:name]}.xml")
       end
       
       def copy_extension_config
@@ -39,6 +37,7 @@ module Saruman
       
       def create_models
         if model?
+          
           models.each do |model|
             @model_name = model[:model_name]
             @model_klass_name = "#{namespace}_#{name}_Model_#{@model_name}"
@@ -48,8 +47,8 @@ module Saruman
             @table_name = model[:model_table_name]
             template("Model.php", "#{model_path}#{@model_name}.php")
             template("Resource_Model.php", "#{resource_model_path}#{@model_name}.php")
-
           end
+          
           @setup_path = "#{setup_base_path}#{name_lower}_setup/"
           empty_directory(@setup_path)
           template("mysql4-install.php", "#{@setup_path}mysql4-install-#{version}.php")
@@ -59,15 +58,15 @@ module Saruman
       private
       
       def namespace
-        extension_options[:namespace]
+        arguments[:namespace]
       end
       
       def name
-        extension_options[:name]
+        arguments[:name]
       end
       
       def combined_namespace
-        "#{extension_options[:namespace]}_#{extension_options[:name]}"
+        "#{arguments[:namespace]}_#{arguments[:name]}"
       end
       
       def namespace_lower
@@ -84,11 +83,11 @@ module Saruman
       end
       
       def author
-        extension_options[:author]
+        arguments[:author]
       end
       
       def version
-        extension_options[:version]
+        arguments[:version]
       end  
       
       def global_config_basepath
@@ -132,7 +131,7 @@ module Saruman
       end  
       
       def observer?
-        if extension_options[:observer] == true
+        if arguments[:observer] == true
           return true
         else
           return false
@@ -140,11 +139,11 @@ module Saruman
       end
       
       def observers
-        extension_options[:observer_events]
+        arguments[:observer_events]
       end
       
       def helper?
-        if extension_options[:helper] == true
+        if arguments[:helper] == true
           return true
         else
           return false
@@ -152,17 +151,15 @@ module Saruman
       end
       
       def model?
-        if extension_options[:model] == true
+        if arguments[:model] == true
           return true
         else
           return false
         end
       end
       
-      
-      
       def models
-        extension_options[:models]
+        arguments[:models]
       end
       
     end

@@ -29,8 +29,9 @@ module Saruman
             end
             menu.choice(:catalogrule_before_apply) { options[:observer_events].push(:catalog_before_apply) }
             menu.choice(:catalogrule_after_apply) { options[:observer_events].push(:catalog_after_apply) }
+            menu.choice(:checkout_cart_save_after) { options[:observer_events].push(:catalog_after_apply) }            
           end
-        end while agree("Observe another event?", true)
+        end while agree("Observe another event?")
         
       end
       

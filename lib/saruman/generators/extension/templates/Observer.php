@@ -7,7 +7,7 @@ class <%= combined_namespace %>_Model_Observer
   {
     $event = $observer->getEvent();
     Mage::log("I put on my robe and wizard hat");
-    Mage::log($observer->getEventName().' was called. Winning!');
+    Mage::log($event->getEventName().' was called. Winning!');
   }
   <% end %>
 }
