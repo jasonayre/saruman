@@ -50,7 +50,7 @@ module Saruman
             template("Resource_Model.php", "#{resource_model_path}#{@model_name}.php")
 
           end
-          @setup_path = "#{setup_base_path}#{@table_name}_setup/"
+          @setup_path = "#{setup_base_path}#{name_lower}_setup/"
           empty_directory(@setup_path)
           template("mysql4-install.php", "#{@setup_path}mysql4-install-#{version}.php")
         end

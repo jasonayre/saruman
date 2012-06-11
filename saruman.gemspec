@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.version     = Saruman::VERSION
   s.authors     = ["Jason Ayre"]
   s.email       = ["jasonayre@gmail.com"]
-  s.homepage    = ""
+  s.homepage    = "https://github.com/jasonayre/saruman.git"
   s.summary     = %q{Magento Extension command line generator}
   s.description = %q{Lets you create magento extensions, add models, etc}
 

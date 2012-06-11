@@ -40,7 +40,6 @@
         <resourceModel><%= resource_model_name_lower %></resourceModel>
       </<%= extension_name_lower %>>
       <<%= resource_model_name_lower %>>
-      <% models.each do |model| %>
         <class><%= resource_model_klass_name %></class>
         <entities>
           <% models.each do |model| %>
@@ -48,7 +47,6 @@
           <% end %>
         </entities>
       </<%= resource_model_name_lower %>>
-      <% end %>
     </models>
     <resources>
       <<%= extension_name_lower %>_setup>
