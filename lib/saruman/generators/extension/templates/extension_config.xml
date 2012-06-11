@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<!-- 
+/**
+* @category   <%= namespace %>
+* @package    <%= combined_namespace %>
+* @author     <%= author %>
+* @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+*/
+-->
+<config>
+  <modules>
+    <<%= combined_namespace %>>
+      <version>0.0.1</version>
+    </<%= combined_namespace %>>
+  </modules>
+  
+  <frontend>
+    <% if observer? %>
+    <events>
+      <% observers.each do |event| %>
+      <<%= event %>>
+        <observers>
+          <<%= combined_namespace %>_Model_Observer>
+            <type>singleton</type>
+            <class><%= combined_namespace %>_Model_Observer</class>
+            <method><%= event %></method>
+          </<%= combined_namespace %>_Model_Observer>
+        </observers>
+      </<%= event %>>
+      <% end %>
+    </events>
+    <% end %>
+  </frontend>
+ 
+  <global>
+    <% if model? %>
+    <models>
+      <<%= extension_name_lower %>>
+        <class><%= model_klass_name %></class>
+        <resourceModel><%= resource_model_name_lower %></resourceModel>
+      </<%= extension_name_lower %>>
+      <<%= resource_model_name_lower %>>
+      <% models.each do |model| %>
+        <class><%= resource_model_klass_name %></class>
+        <entities>
+          <% models.each do |model| %>
+          <<%= model[:model_name_lower] %>><table><%= model[:model_table_name] %></table></<%= model[:model_name_lower] %>>
+          <% end %>
+        </entities>
+      </<%= resource_model_name_lower %>>
+      <% end %>
+    </models>
+    <resources>
+      <<%= extension_name_lower %>_setup>
+        <setup>
+          <module><%= combined_namespace %></module>
+        </setup>
+        <connection>
+          <use>core_setup</use>
+        </connection>
+      </<%= extension_name_lower %>_setup>
+      <<%= extension_name_lower %>_write>
+        <connection>
+          <use>core_write</use>
+        </connection>
+      </<%= extension_name_lower %>_write>
+      <<%= extension_name_lower %>_read>
+        <connection>
+          <use>core_read</use>
+        </connection>
+      </<%= extension_name_lower %>_read>
+    </resources>
+    <% end %>
+    <% if helper? %>
+    <helpers>
+      <<%= name_lower %>>
+        <class><%= combined_namespace %>_Helper</class>
+      </<%= name_lower %>>
+    </helpers>
+    <% end %>    
+  </global>
+  
+</config>
