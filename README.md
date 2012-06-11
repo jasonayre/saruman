@@ -20,7 +20,7 @@ The wizard should take you through the rest of it. I would recommend adding an o
 
 However the phrase goes, its a lot of words, so here is an example of what my terminal looks like after creating a new extension via saruman, along with tailing the magento system log in bottom portion of terminal screen. Oh and I didnt see my itunes open in back when I took screenshot, and too lazy to take a new one, so I would like to state for the record that I have no idea how Katy Perry got into my itunes library, though I suspect it was the work of gremlins, or George W Bush and is part of some 9/11 cover up conspiracy...
 
-![Saruman Image example](/doc_assets/saruman_extension_example.jpg)
+![Saruman Image example](/jasonayre/saruman/doc_assets/saruman_extension_example.jpg)
 
 ### Creating the models
 
