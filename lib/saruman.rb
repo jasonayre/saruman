@@ -34,11 +34,11 @@ module Saruman
     end
     
     def global_config_basepath
-      "app/etc/modules/"
+      "#{Dir.pwd}/app/etc/modules/"
     end
     
     def extension_base_path
-      "app/code/local/#{namespace}/#{name}/"
+      "#{Dir.pwd}/app/code/local/#{namespace}/#{name}/"
     end
     
     def extension_temp_path
