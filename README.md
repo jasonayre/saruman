@@ -2,19 +2,21 @@
 
 A ruby gem developed by jasonayre of bravenewwebdesign.com (site down currently), to make super complicated, ridiculous, time consuming things in Magento, e.g. creating a new extension, easy.
 
-## NOTE: NOT EVERYTHING HAS BEEN TESTED, USE AT YOUR OWN RISK
+## NOTE: NOT EVERYTHING HAS BEEN THOROUGHLY TESTED, USE AT YOUR OWN RISK
 
-### IF YOUR COMPUTER BLOWS UP, NOT MY FAULT. Probably make a new branch before attempting to use, ESPECIALLY if not creating a new extension.
+### IF YOUR COMPUTER BLOWS UP, NOT MY FAULT. Probably make a new branch before attempting to use!
 
 ## Installing
 
     gem install saruman
     
-Creating a new extension should be working. To do so, navigate to the root directory of your magento installation and call
+Creating a new extension should be working. To do so, MAKE SURE YOU ARE IN THE ROOT DIRECTORY (containing app folder) of your magento installation and call
 
     saruman extension
     
 The wizard should take you through the rest of it. I would recommend adding an observer, choose event #145 (checkout_cart_update), and then after it's finished, add an item to your cart and watch the system log, to verify everything is working correctly (well not EVERYTHING, just the observer and general installation of the extension really)
+
+If you created a model, check your db for the new tables, along with the extension version in core_resource table
 
 ### A picture is worth a thousand words (or is it a million?)
 
@@ -22,23 +24,31 @@ However the phrase goes, its a lot of words, so here is an example of what my te
 
 ![Saruman Image example](/jasonayre/saruman/raw/master/doc_assets/saruman_extension_example.jpg)
 
-### Creating the models
+## Commands
 
-You are able to create an unlimited number of models for your extension, and it is done in rails fashion. E.g, when you get to models part of wizard:
+### saruman extension
 
-    title:string content:text active:boolean
+    saruman extension
+    
+Will guide you through the wizard process and help you build an extension. Will let you create an observer, model, helper for your new extension along with an installer.
 
-Will create the magento installer sql using the rails friendly syntax.
-
-### Future stuff
-
-Technically I believe the model command is working, honestly haven't really tested it so I dont recommend using it. The idea behind this whole library is you will be able to do things like
+### saruman model
 
     saruman model
     
-And then the wizard will let you create any number of models, using a railsish syntax, which will create magento models for a specific extension. It will also create a new version upgrade, along with the resource models and what not.
+Will let you create any number of models for the specified magento extension. You must type the fields using same syntax rails uses. e.x.
 
-The coolest part and hardest part to get right, is I'm actually reading the config files of the magento extension, and appending the new data declarations for the models and what not, in an attempt to really simplify the creation of magento extensions. (work in progress, you can try it for now but no promises nothing will break)
+    title:string content:text active:boolean
+    
+When creating models, it is assumed that you will be creating a new version of the extension. Therefore, a upgrade file is created with the SQL for all of your new models, along with the appropriately named new version.
+NOTE: I couldn't remember whether Magento even allows anything but 0.0.1 (3 digits sep by period) syntax, so things will probably break if that is not the case, and you don't have the 3 digit version syntax on your extension (writing this super fast so dont have time to check.)    
 
+### saruman observer
 
+  saruman observer
+  
+Will create a new observer file with an unlimited amount of events you wish to observe. I also parsed a document containing most of the observer events in magento version 1.5ish I believe, so there are about 300 events to choose from, no guarantees that they all work or are up to date. Just type the number of the observer event youd like to observer, rinse and repeat until you are finished (note that it will create all the observer events into one observer.php file so it will overwrite if you have an observer already.)
 
+### Future stuff
+
+Controllers, helpers, more stuff. I'll post a screencast of how to use it as well, sometime in near future.
