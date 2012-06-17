@@ -53,6 +53,10 @@ module Saruman
       "#{extension_base_path}Model/"
     end
     
+    def helper_path
+      "#{extension_base_path}Helper/"
+    end
+    
     def resource_model_path
       "#{model_path}Mysql4/"
     end
