@@ -35,18 +35,6 @@
   <global>
     <% if model? %>
     <models>
-      <<%= extension_name_lower %>>
-        <class><%= model_klass_name %></class>
-        <resourceModel><%= resource_model_name_lower %></resourceModel>
-      </<%= extension_name_lower %>>
-      <<%= resource_model_name_lower %>>
-        <class><%= resource_model_klass_name %></class>
-        <entities>
-          <% models.each do |model| %>
-          <<%= model[:model_name_lower] %>><table><%= model[:model_table_name] %></table></<%= model[:model_name_lower] %>>
-          <% end %>
-        </entities>
-      </<%= resource_model_name_lower %>>
     </models>
     <resources>
       <<%= extension_name_lower %>_setup>

@@ -87,7 +87,6 @@ app/code/core/Mage/Catalog/Model/Product/Action.php,123,catalog_product_website_
 app/code/core/Mage/Catalog/Model/Product/Attribute/Source/Inputtype.php,55,adminhtml_product_attribute_types
 app/code/core/Mage/Catalog/Model/Product/Option/Api.php,166,catalog_product_prepare_save
 app/code/core/Mage/Catalog/Model/Product/Status.php,217,catalog_product_status_update
-app/code/core/Mage/Catalog/Model/Product/Type/Abstract.php,542,"Mage::dispatchEvent($eventName, array("
 app/code/core/Mage/Catalog/Model/Product/Type/Configurable/Price.php,71,catalog_product_type_configurable_price
 app/code/core/Mage/Catalog/Model/Product/Type/Grouped/Price.php,70,catalog_product_type_grouped_price
 app/code/core/Mage/Catalog/Model/Product/Type/Price.php,68,catalog_product_get_final_price

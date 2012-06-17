@@ -26,7 +26,8 @@ Gem::Specification.new do |s|
   s.add_dependency "thor"
   s.add_dependency "highline"
   s.add_dependency "nokogiri"
-  s.add_dependency "roxml"  
+  s.add_dependency "virtus"
+  
   s.add_development_dependency "rspec", "~> 2.6"
   s.add_development_dependency "cucumber"
   s.add_development_dependency "aruba"

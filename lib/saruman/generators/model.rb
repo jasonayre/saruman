@@ -3,7 +3,10 @@ require 'nokogiri'
 module Saruman
   module Generators
     class Model < Thor::Group
+
       include Thor::Actions
+      include Saruman::Base
+      
       argument :arguments, :type => :hash
       
       def self.source_root
@@ -20,161 +23,65 @@ module Saruman
         end
       end
       
+      def load_builders
+        @model_xml_config_builder = Saruman::ModelXmlConfigBuilder.new(models, self)
+      end
+      
       def create_model_directory
         empty_directory(model_path) unless File.directory?(model_path)
       end
       
-      def create_temp_directory
-        empty_directory("#{extension_temp_path}")
-      end
-      
-      def read_extension_config
-
-        fp = "#{extension_config_path}/config.xml"
-        config = File.open(fp, "r+")
+      def modify_config
         
-        @config = Nokogiri::XML(config)
-        config.close
+        @config = read_extension_config
         
-        @extension_current_version = @config.css("version").first.content
-        
-        global_node = @config.css("global")
-
-        models_node = global_node.css("models")
-        
-        if models_node.empty?
-          models_node = Nokogiri::XML::Node.new('models', @config)
-          global_node.first.add_child(models_node)
+        unless config_has_tag?("config global")
+          insert_tag_at_node("global", "config")
         end
         
-        model_declaration_node = @config.css("models #{name_lower}")
-        
-        if model_declaration_node.empty?
-          @resource_model_config_temp_path = "#{extension_temp_path}_config.xml"
-          template("resource_model_config_block.xml", @resource_model_config_temp_path)
-          resource_model_config_file = File.open(@resource_model_config_temp_path)
-          resource_model_config_block = Nokogiri::XML(resource_model_config_file).root
-          resource_model_config_file.close
-          
-          @model_config_temp_path = "#{extension_temp_path}model_config_block.xml"
-          template("model_config_block.xml", @model_config_temp_path)
-          model_config_file = File.open(@model_config_temp_path)
-          model_config_block = Nokogiri::XML(model_config_file).root
-          model_config_file.close
-          
-          models_node = @config.css("models").first
-          
-          models_node.add_child(model_config_block)
-          models_node.add_child(resource_model_config_block)
-          
+        unless config_has_tag?("config global models")
+          insert_tag_at_node("models", "config global")
         end
-
-        models_node_find = @config.css('models')
-
-        file = File.open(fp,'w')
-        file.puts @config.to_xml
-        file.close
-
+        
+        unless config_has_tag?("models #{name_lower}")
+          insert_xml_at_node(@model_xml_config_builder.config_global_models_model_xml, "config models")
+          insert_xml_at_node(@model_xml_config_builder.config_models_resource_xml, "config models")
+        else
+          insert_xml_at_node(@model_xml_config_builder.config_models_resource_entities_xml, "#{name_lower}_mysql4 entities")
+        end
+        
+        unless config_has_tag?("resources")
+          insert_xml_at_node(@model_xml_config_builder.config_global_resources_xml, "config global resources")
+        end
+        
+        write_extension_config
+        
       end
       
-      def remove_temp_dir
-        FileUtils.rm_rf(extension_temp_path)
+      def create_models
+        models.each do |model|
+          @model_name = model[:model_name]
+          @model_klass_name = "#{namespace}_#{name}_Model_#{@model_name}"
+          @model_name_lower = model[:model_name_lower]
+
+          @resource_model_klass_name = "#{namespace}_#{name}_Model_Mysql4_#{@model_name}"
+          @table_name = model[:model_table_name]
+          template("Model.php", "#{model_path}#{@model_name}.php")
+          template("Resource_Model.php", "#{resource_model_path}#{@model_name}.php")
+        end       
       end  
       
       def create_installer_upgrade
-        template("mysql4-install.php", "#{setup_base_path}/mysql4-upgrade-#{@extension_current_version}-#{extension_upgrade_version}.php")
-      end
-      
-      private
-      
-      def namespace
-        arguments[:namespace]
-      end
-      
-      def name
-        arguments[:name]
-      end
-      
-      def combined_namespace
-        "#{arguments[:namespace]}_#{arguments[:name]}"
-      end
-      
-      def namespace_lower
-        namespace.downcase
-      end
-      
-      def name_lower
-        name.downcase
-      end
-      
-      #alias for name
-      def extension_name_lower
-        name.downcase
-      end
-      
-      def version
-        arguments[:version]
-      end
-      
-      def global_config_basepath
-        "app/etc/modules/"
-      end
-      
-      def extension_base_path
-        "app/code/local/#{namespace}/#{name}/"
-      end
-      
-      def extension_temp_path
-        "#{extension_base_path}temp/"
-      end  
-      
-      def extension_config_path
-        "#{extension_base_path}etc/"
-      end
-      
-      def model_path
-        "#{extension_base_path}Model/"
-      end
-      
-      def resource_model_path
-        "#{model_path}Mysql4/"
-      end
-      
-      def setup_base_path
-        "#{extension_base_path}sql/#{name_lower}_setup/"
-      end
-      
-      def model_klass_name
-        "#{combined_namespace}_Model"
-      end  
-      
-      def resource_model_name
-        "#{extension_name_lower}_mysql4"
-      end
-      
-      def resource_model_klass_name
-        "#{combined_namespace}_Model_Mysql4"
-      end
-      
-      def global_config_file_path
-        "#{global_config_basepath}#{combined_namespace}.xml"
-      end
-      
-      def extension_upgrade_version
-        @extension_current_version.to_f + 0.1
-      end  
-      
-      def model?
-        if arguments[:model] == true
-          return true
+        if command.to_s == "extension"
+          template("mysql4-install.php", "#{setup_base_path}/mysql4-install-#{version}.php")
+        elsif command.to_s == "model"
+          template("mysql4-install.php", "#{setup_base_path}/mysql4-upgrade-#{extension_current_version}-#{extension_upgrade_version}.php")
         else
-          return false
+
         end
       end
       
-      def models
-        arguments[:models]
-      end
+      private
       
     end
   end

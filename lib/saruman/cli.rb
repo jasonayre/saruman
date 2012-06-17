@@ -8,11 +8,11 @@ module Saruman
     desc "extension", "Creates a new magento extension"
     def extension
       options = Hash.new
-      
+      options[:command] = __method__
       options[:namespace] = ask("Enter extension namespace:") { |q| q.default = "Saruman" }
       options[:name] = ask("Enter extension name:") { |q| q.default = "Wizard" }
       options[:author] = ask("Author of extension:") { |q| q.default = "Jason Ayre www.bravenewwebdesign.com" }
-      options[:version] = ask("Version number (default - 0.0.1):") { |q| q.default = "0.0.1" }
+      options[:version] = ask("Version number (Format - 0.0.1):") { |q| q.default = "0.0.1" }
       
       say("Would you like me to create an observer?")
       choose do |menu|
@@ -21,17 +21,24 @@ module Saruman
       end
       
       if(options[:observer])
+        
         say("Choose the events you would like to observe")
         begin
+          
           choose do |menu|
             if(options[:observer_events]).nil?
               options[:observer_events] = Array.new
             end
-            menu.choice(:catalogrule_before_apply) { options[:observer_events].push(:catalog_before_apply) }
-            menu.choice(:catalogrule_after_apply) { options[:observer_events].push(:catalog_after_apply) }
-            menu.choice(:checkout_cart_save_after) { options[:observer_events].push(:checkout_cart_save_after) }
+            if @observer_menu_builder.nil?
+              @observer_menu_builder = Saruman::ObserverMenuBuilder.new(menu)
+            else
+              @observer_menu_builder.display_choices(menu)
+            end
+            
           end
         end while agree("Observe another event?")
+        
+        options[:observer_events] = @observer_menu_builder.decisions
         
       end
       
@@ -41,16 +48,16 @@ module Saruman
         menu.choice(:no) { options[:model] = false }
       end
       
-      if(options[:model])     
-
-          if(options[:models]).nil?
-            options[:models] = Array.new
-          end
-          
-          begin
-            question = Saruman::ModelBuilder.new
-            options[:models] << question.output
-          end while agree("Create another model?")
+      if(options[:model])
+        
+        if(options[:models]).nil?
+          options[:models] = Array.new
+        end
+        
+        begin
+          question = Saruman::ModelBuilder.new
+          options[:models] << question.output
+        end while agree("Create another model?")
         
       end
       
@@ -61,28 +68,61 @@ module Saruman
       end
       
       Saruman::Generators::Extension.start([options])
-
+      
+      if options[:model]
+        Saruman::Generators::Model.start([options])
+      end  
+      
     end
     
     desc "model", "Creates a new magento model"
     def model
       options = Hash.new
+      options[:command] = __method__
       options[:namespace] = ask("Enter extension namespace:") { |q| q.default = "Saruman" }
       options[:name] = ask("Enter extension name:") { |q| q.default = "Wizard" }
       
-        if(options[:models]).nil?
-          options[:models] = Array.new
-        end
-        
-        begin
-          question = Saruman::ModelBuilder.new
-          options[:models] << question.output
-        end while agree("Create another model?")
-
+      if(options[:models]).nil?
+        options[:models] = Array.new
+      end
       
+      begin
+        question = Saruman::ModelBuilder.new
+        options[:models] << question.output
+      end while agree("Create another model?")
+
       Saruman::Generators::Model.start([options])
       
-    end  
+    end
+    
+    desc "observer", "Creates a new observer for an extension"
+    def observer
+      options = Hash.new
+      options[:command] = __method__
+      options[:namespace] = ask("Enter extension namespace:") { |q| q.default = "Saruman" }
+      options[:name] = ask("Enter extension name:") { |q| q.default = "Wizard" }
+      
+      say("Choose the events you would like to observe")
+      begin
+        
+        choose do |menu|
+          if(options[:observer_events]).nil?
+            options[:observer_events] = Array.new
+          end
+          if @observer_menu_builder.nil?
+            @observer_menu_builder = Saruman::ObserverMenuBuilder.new(menu)
+          else
+            @observer_menu_builder.display_choices(menu)
+          end
+          
+        end
+      end while agree("Observe another event?")
+      
+      options[:observer_events] = @observer_menu_builder.decisions
+
+      Saruman::Generators::Observer.start([options])
+      
+    end
     
   end
   

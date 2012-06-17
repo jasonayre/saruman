@@ -1,0 +1,5 @@
+<% models.each do |model| %>
+<<%= model[:model_name_lower] %>><table><%= model[:model_table_name] %></table></<%= model[:model_name_lower] %>>
+
+<% end %>
+

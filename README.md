@@ -14,7 +14,7 @@ Creating a new extension should be working. To do so, navigate to the root direc
 
     saruman extension
     
-The wizard should take you through the rest of it. I would recommend adding an observer, choose event #3 (checkout_cart_update), and then after it's finished, add an item to your cart and watch the system log, to verify everything is working correctly (well not EVERYTHING, just the observer and general installation of the extension really)
+The wizard should take you through the rest of it. I would recommend adding an observer, choose event #145 (checkout_cart_update), and then after it's finished, add an item to your cart and watch the system log, to verify everything is working correctly (well not EVERYTHING, just the observer and general installation of the extension really)
 
 ### A picture is worth a thousand words (or is it a million?)
 
