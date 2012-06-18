@@ -45,7 +45,7 @@ NOTE: I couldn't remember whether Magento even allows anything but 0.0.1 (3 digi
 
 ### saruman observer
 
-  saruman observer
+    saruman observer
   
 Will create a new observer file with an unlimited amount of events you wish to observe. I also parsed a document containing most of the observer events in magento version 1.5ish I believe, so there are about 300 events to choose from, no guarantees that they all work or are up to date. Just type the number of the observer event youd like to observer, rinse and repeat until you are finished (note that it will create all the observer events into one observer.php file so it will overwrite if you have an observer already.)
 

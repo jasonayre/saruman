@@ -53,6 +53,10 @@ module Saruman
       "#{extension_base_path}Model/"
     end
     
+    def controller_path
+      "#{extension_base_path}controllers/"
+    end    
+    
     def helper_path
       "#{extension_base_path}Helper/"
     end
@@ -117,6 +121,22 @@ module Saruman
       arguments[:observer_events]
     end
     
+    def controller?
+      if arguments[:controller] == true
+        return true
+      else
+        return false
+      end
+    end
+    
+    def controllers
+      arguments[:controllers]
+    end
+    
+    def controller_front_name
+      arguments[:controller_front_name]
+    end       
+    
     def helper?
       if arguments[:helper] == true
         return true
@@ -140,7 +160,7 @@ module Saruman
       file = File.open(extension_config_file_path,'w')
       file.puts @config.to_xml
       file.close
-    end  
+    end
     
     def extension_current_version
       @extension_current_version = @config.css("version").first.content
@@ -163,7 +183,6 @@ module Saruman
     
     def insert_tag_at_node(tag, tag_lookup)
       target_tag = @config.css(tag_lookup).first
-      puts "inserting #{tag} from looku #{tag_lookup}"
       unless target_tag.nil?
         new_tag = "<#{tag}></#{tag}>"
         target_tag.add_child(new_tag)
@@ -182,7 +201,7 @@ module Saruman
   
   module MenuBuilder
     include Virtus
-    attribute :decisions, Array, :default => []
+
 
     # def decisions
     #   return decisions_made
@@ -194,9 +213,10 @@ module Saruman
     
     # include Virtus
     include MenuBuilder
-    # attribute :chosen_events, Array
+
     attribute :observer_events, Array, :default => []
-    # attribute :decisions, Array, :default => []
+    attribute :decisions, Array, :default => []
+
     BASE_DIR = File.dirname(__FILE__)
     OBSERVER_EVENTS_FILE_PATH = BASE_DIR+"/saruman/generators/observer/observer_events.csv"
     
@@ -230,7 +250,60 @@ module Saruman
     
   end
   
+  class ControllerBuilder
+    
+    def initialize
+      ask_question
+    end
+    
+    def ask_question
+      controller_name = ask("Enter Controller Name (will match www.yourmagentoinstall.com/frontname/controllername)") { |q| q.default = "index" }
+      controller_actions_input = ask("Enter list of actions for this controller, I.E., index show add") { |q| q.default = "index show add"}
+      controller_actions = parse_controller_actions(controller_actions_input)
+      @question_answer = {:controller_name => controller_name.capitalize, :controller_actions => controller_actions}
+      @question_answer
+    end
+    
+    def output
+      return @question_answer
+    end
+    
+    def parse_controller_actions(controller_actions_input)
+      actions = []
+      controller_actions_input.split(" ").each do |action|
+        actions << Saruman::ControllerBuilderAction.new(action)
+      end
+      actions
+    end
+    
+  end
+  
+  class ControllerBuilderAction
+    include Virtus
+    
+    #designed for future stuff, mostly pointless/overkill for now
+    
+    attribute :visibility, String
+    attribute :respond_to, String
+    attribute :name, String
+    attribute :method_name, String
+    attribute :segs, Array
+    
+    def initialize(action)
+      @segs = action.split(":")
+      case segs.length
+      when 1
+        @visibility = "public"
+        @respond_to = "html"
+        @name = segs.first
+        @method_name = "#{name}Action"
+      end
+    end  
+    
+  end  
+  
   class ModelBuilder
+    
     def initialize
       ask_question
     end
@@ -305,8 +378,8 @@ module Saruman
       else
         super
       end
-    end    
-  end  
+    end
+  end
   
   class ModelXmlConfigBuilder
     include Virtus
@@ -411,6 +484,33 @@ module Saruman
       </#{event}>
     "
       end
+      return xml
+    end
+    
+  end
+  
+  class ControllerXmlConfigBuilder
+    include Virtus
+    include XmlBuilderBase
+    attribute :controllers, Array
+    attribute :config_frontend_routers_name_xml, String
+    
+    def initialize(controllers, generator)
+      @controllers = controllers
+      @generator = generator
+      @config_frontend_routers_name_xml = set_config_frontend_routers_name_xml
+    end
+    
+    def set_config_frontend_routers_name_xml
+      xml="
+      <#{name_lower}>
+        <use>standard</use>
+        <args>
+          <module>#{combined_namespace}</module>
+          <frontName>#{controller_front_name}</frontName>
+        </args>  
+      </#{name_lower}>
+    "
       return xml
     end
     

@@ -14,7 +14,28 @@ module Saruman
       options[:author] = ask("Author of extension:") { |q| q.default = "Jason Ayre www.bravenewwebdesign.com" }
       options[:version] = ask("Version number (Format - 0.0.1):") { |q| q.default = "0.0.1" }
       
-      say("Would you like me to create an observer?")
+      say("Would you like to create a controller?")
+      choose do |menu|
+        menu.choice(:yes) { options[:controller] = true }
+        menu.choice(:no) { options[:controller] = false }
+      end
+
+      if(options[:controller])
+        
+        options[:controller_front_name] = ask("Enter Front Name of controller (will match www.yourmagentoinstall.com/frontname)") { |q| q.default = "extension_name" }
+        
+        if(options[:controllers]).nil?
+          options[:controllers] = Array.new
+        end
+        
+        begin
+          question = Saruman::ControllerBuilder.new
+          options[:controllers] << question.output
+        end while agree("Create another controller?")
+        
+      end
+      
+      say("Would you like to create an observer?")
       choose do |menu|
         menu.choice(:yes) { options[:observer] = true }
         menu.choice(:no) { options[:observer] = false }
@@ -42,7 +63,7 @@ module Saruman
         
       end
       
-      say("Would you like me to create a model?")
+      say("Would you like to create a model?")
       choose do |menu|
         menu.choice(:yes) { options[:model] = true }
         menu.choice(:no) { options[:model] = false }
@@ -61,7 +82,7 @@ module Saruman
         
       end
       
-      say("Would you like me to create a helper?")
+      say("Would you like to create a helper?")
       choose do |menu|
         menu.choice(:yes) { options[:helper] = true }
         menu.choice(:no) { options[:helper] = false }
@@ -71,7 +92,11 @@ module Saruman
       
       if options[:model]
         Saruman::Generators::Model.start([options])
-      end  
+      end
+      
+      if options[:controller]
+        Saruman::Generators::Controller.start([options])
+      end        
       
     end
     
@@ -121,6 +146,27 @@ module Saruman
       options[:observer_events] = @observer_menu_builder.decisions
 
       Saruman::Generators::Observer.start([options])
+      
+    end
+    
+    desc "controller", "Creates a new magento controller"
+    def controller
+      options = Hash.new
+      options[:command] = __method__
+      options[:namespace] = ask("Enter extension namespace:") { |q| q.default = "Saruman" }
+      options[:name] = ask("Enter extension name:") { |q| q.default = "Wizard" }
+      options[:controller_front_name] = ask("Enter Front Name of controller (will match www.yourmagentoinstall.com/frontname)") { |q| q.default = "extension_name" }
+      
+      if(options[:controllers]).nil?
+        options[:controllers] = Array.new
+      end
+      
+      begin
+        question = Saruman::ControllerBuilder.new
+        options[:controllers] << question.output
+      end while agree("Create another Controller?")
+
+      Saruman::Generators::Controller.start([options])
       
     end
     
