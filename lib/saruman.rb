@@ -30,7 +30,6 @@ module Saruman
       name.downcase
     end
     
-    #alias for name
     def extension_name_lower
       name.downcase
     end
