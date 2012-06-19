@@ -47,21 +47,52 @@ module Saruman
           insert_xml_at_node(@controller_xml_config_builder.config_frontend_routers_name_xml, "config frontend routers")
         end
         
-        write_extension_config
+        @controllers_with_views = controllers.select { |controller| controller.create_views == true }
+
+        if @controllers_with_views.length > 0
+          unless config_has_tag?("config frontend layout")
+            insert_xml_at_node(@controller_xml_config_builder.config_frontend_layout_xml, "config frontend")
+          end
+          
+          unless config_has_tag?("config global blocks")
+            insert_xml_at_node(@controller_xml_config_builder.config_global_blocks_xml, "config global")            
+          end
+          
+          template("local.xml", app_design_frontend_base_layout_local_xml_path)
+          
+        end
         
       end
       
       def create_controllers
         controllers.each do |controller|
-          @controller_name = controller[:controller_name].capitalize
-          @controller_klass_name = "#{namespace}_#{name}_#{@controller_name}Controller"
-          @controller_name_lower = controller[:controller_name].downcase
-          @controller_actions = controller[:controller_actions]
-          template("Controller.php", "#{controller_path}#{@controller_name}Controller.php")
+          @controller = controller
+          template("Controller.php", "#{controller_path}#{@controller.name}Controller.php")
+          if controller.create_views
+            empty_directory(controller_view_path(@controller.name_lower)) unless File.directory?(controller_view_path(@controller.name_lower))
+            controller.actions.each do |action|
+              @action = action
+              @kontroller_front_name = controller_front_name
+              template("view.phtml", controller_view_action_path(@controller.name_lower, @action.name))
+            end
+            app_design_frontend_base_template_namespace_path
+          end  
         end       
       end
       
+      def write_changes
+        write_extension_config
+      end  
+      
       private
+      
+      def controller_view_path(controller_name)
+        "#{app_design_frontend_base_template_namespace_path}#{controller_name}/"
+      end
+      
+      def controller_view_action_path(controller_name, action_name)
+        "#{controller_view_path(controller_name)}#{action_name}.phtml"
+      end  
       
     end
   end

@@ -1,0 +1,11 @@
+<layout version="0.1.0">
+  <% @controllers_with_views.each do |controller| %>
+  <% controller.actions.each do |action| %>
+    <<%= action.layout_handle(name_lower, controller.name_lower) %>>
+      <reference name="content">
+        <block type="<%= name_lower %>/<%= controller.name_lower %>" name="<%= action.block_name %>" as="<%= action.block_as %>" template="<%= action.block_template %>" />
+      </reference>
+    </<%= action.layout_handle(name_lower, controller.name_lower) %>>
+  <% end %>
+  <% end %>
+</layout>

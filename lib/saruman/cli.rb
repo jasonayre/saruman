@@ -13,7 +13,8 @@ module Saruman
       options[:name] = ask("Enter extension name:") { |q| q.default = "Wizard" }
       options[:author] = ask("Author of extension:") { |q| q.default = "Jason Ayre www.bravenewwebdesign.com" }
       options[:version] = ask("Version number (Format - 0.0.1):") { |q| q.default = "0.0.1" }
-      
+      options[:combined_namespace] = "#{options[:namespace]}_#{options[:name]}"
+            
       say("Would you like to create a controller?")
       choose do |menu|
         menu.choice(:yes) { options[:controller] = true }
@@ -29,7 +30,7 @@ module Saruman
         end
         
         begin
-          question = Saruman::ControllerBuilder.new
+          question = Saruman::ControllerBuilder.new(options)
           options[:controllers] << question.output
         end while agree("Create another controller?")
         
@@ -76,7 +77,7 @@ module Saruman
         end
         
         begin
-          question = Saruman::ModelBuilder.new
+          question = Saruman::ModelBuilder.new(options)
           options[:models] << question.output
         end while agree("Create another model?")
         
@@ -106,13 +107,13 @@ module Saruman
       options[:command] = __method__
       options[:namespace] = ask("Enter extension namespace:") { |q| q.default = "Saruman" }
       options[:name] = ask("Enter extension name:") { |q| q.default = "Wizard" }
-      
+      options[:combined_namespace] = "#{options[:namespace]}_#{options[:name]}"
       if(options[:models]).nil?
         options[:models] = Array.new
       end
       
       begin
-        question = Saruman::ModelBuilder.new
+        question = Saruman::ModelBuilder.new(options)
         options[:models] << question.output
       end while agree("Create another model?")
 
@@ -157,12 +158,14 @@ module Saruman
       options[:name] = ask("Enter extension name:") { |q| q.default = "Wizard" }
       options[:controller_front_name] = ask("Enter Front Name of controller (will match www.yourmagentoinstall.com/frontname)") { |q| q.default = "extension_name" }
       
+      options[:combined_namespace] = "#{options[:namespace]}_#{options[:name]}"
+            
       if(options[:controllers]).nil?
         options[:controllers] = Array.new
       end
       
       begin
-        question = Saruman::ControllerBuilder.new
+        question = Saruman::ControllerBuilder.new(options)
         options[:controllers] << question.output
       end while agree("Create another Controller?")
 

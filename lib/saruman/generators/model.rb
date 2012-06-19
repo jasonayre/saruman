@@ -60,14 +60,13 @@ module Saruman
       
       def create_models
         models.each do |model|
-          @model_name = model[:model_name]
-          @model_klass_name = "#{namespace}_#{name}_Model_#{@model_name}"
-          @model_name_lower = model[:model_name_lower]
-
-          @resource_model_klass_name = "#{namespace}_#{name}_Model_Mysql4_#{@model_name}"
-          @table_name = model[:model_table_name]
-          template("Model.php", "#{model_path}#{@model_name}.php")
-          template("Resource_Model.php", "#{resource_model_path}#{@model_name}.php")
+          @model = model
+          template("Model.php", "#{model_path}#{@model.name}.php")
+          template("Resource_Model.php", "#{resource_model_path}#{@model.name}.php")
+          if model.collection?
+            empty_directory("#{resource_model_path}#{@model.name}/")
+            template("Collection.php", "#{resource_model_path}#{@model.name}/Collection.php")
+          end  
         end       
       end  
       

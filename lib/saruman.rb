@@ -1,9 +1,11 @@
 require "saruman/version"
 require "highline"
 require "virtus"
+require "saruman/virtus/attributes"
 require "saruman"
 require "nokogiri"
 require 'active_support'
+
 module Saruman
   
   module Base
@@ -69,6 +71,10 @@ module Saruman
       "#{extension_base_path}sql/#{name_lower}_setup/"
     end
     
+    def block_klass_name
+      "#{combined_namespace}_Block"
+    end  
+    
     def model_klass_name
       "#{combined_namespace}_Model"
     end  
@@ -84,6 +90,32 @@ module Saruman
     def global_config_file_path
       "#{global_config_basepath}#{combined_namespace}.xml"
     end
+    
+    def app_design_frontend_base_path
+      newer_magento_base_path = "#{Dir.pwd}/app/design/frontend/base/default/"
+      older_magento_base_path = "#{Dir.pwd}/app/design/frontend/default/default/"
+      if File.directory?(newer_magento_base_path)
+        return newer_magento_base_path
+      else
+        return older_magento_base_path
+      end
+    end
+    
+    def app_design_frontend_base_layout_path
+      "#{app_design_frontend_base_path}layout/"
+    end
+    
+    def app_design_frontend_base_layout_local_xml_path
+      "#{app_design_frontend_base_path}layout/#{name_lower}.xml"
+    end
+    
+    def app_design_frontend_base_template_path
+      "#{app_design_frontend_base_path}template/"
+    end
+    
+    def app_design_frontend_base_template_namespace_path
+      "#{app_design_frontend_base_template_path}#{name_lower}/"
+    end  
     
     def model?
       if arguments[:model] == true
@@ -196,23 +228,26 @@ module Saruman
       end
     end  
     
-  end  
-  
-  
-  module MenuBuilder
-    include Virtus
-
-
-    # def decisions
-    #   return decisions_made
-    # end  
-    
   end
+  
+  module BuilderInstanceBase
+    
+    def initialize(options)
+      @options = options
+    end
+    
+    def method_missing(meth, *args, &block)
+      if(@options.has_key?(meth.to_sym))
+        @options[meth.to_sym]
+      else
+        super
+      end
+    end
+  end  
   
   class ObserverMenuBuilder
     
-    # include Virtus
-    include MenuBuilder
+    include Virtus
 
     attribute :observer_events, Array, :default => []
     attribute :decisions, Array, :default => []
@@ -252,15 +287,25 @@ module Saruman
   
   class ControllerBuilder
     
-    def initialize
+    def initialize(options)
+      @options = options
       ask_question
     end
     
     def ask_question
-      controller_name = ask("Enter Controller Name (will match www.yourmagentoinstall.com/frontname/controllername)") { |q| q.default = "index" }
+      controller = Saruman::Controller.new(@options)
+      controller.name = ask("Enter Controller Name (will match www.yourmagentoinstall.com/frontname/controllername)") { |q| q.default = "index" }
       controller_actions_input = ask("Enter list of actions for this controller, I.E., index show add") { |q| q.default = "index show add"}
-      controller_actions = parse_controller_actions(controller_actions_input)
-      @question_answer = {:controller_name => controller_name.capitalize, :controller_actions => controller_actions}
+      controller.actions = parse_controller_actions(controller_actions_input)
+      
+      say("Would you like to create controller action views?")
+      choose do |menu|
+        menu.choice(:yes) { controller.create_views = true }
+        menu.choice(:no) { controller.create_views  = false }
+      end
+      
+      # @question_answer = {:controller_name => controller_name.capitalize, :controller_actions => controller_actions}
+      @question_answer = controller
       @question_answer
     end
     
@@ -278,6 +323,21 @@ module Saruman
     
   end
   
+  class Controller
+    include Virtus
+    include BuilderInstanceBase
+    attribute :actions, Array
+    attribute :name, Capitalize
+    attribute :create_views, Boolean
+    attribute :name_lower, String, :default => lambda { |model,attribute| model.name.downcase }
+    
+    def klass_name
+      "#{combined_namespace}_#{name}Controller"
+    end
+      
+  end  
+    
+  
   class ControllerBuilderAction
     include Virtus
     
@@ -285,7 +345,7 @@ module Saruman
     
     attribute :visibility, String
     attribute :respond_to, String
-    attribute :name, String
+    attribute :name, Downcase
     attribute :method_name, String
     attribute :segs, Array
     
@@ -298,23 +358,52 @@ module Saruman
         @name = segs.first
         @method_name = "#{name}Action"
       end
-    end  
+    end
+    
+    def layout_handle(extension_name, controller_name)
+      @extension_name = extension_name
+      @controller_name = controller_name
+      "#{@extension_name}_#{@controller_name}_#{name}"
+    end
+    
+    def block_name
+      "#{@extension_name}#{@controller_name}#{name}"
+    end
+    
+    def block_as
+      "#{@extension_name}#{@controller_name}#{name}"
+    end
+    
+    def block_template
+      "#{@extension_name}/#{@controller_name}/#{name}.phtml"
+    end
     
   end  
   
   class ModelBuilder
     
-    def initialize
-      ask_question
+    def initialize(options)
+      @options = options
+      ask_questions
     end
     
-    def ask_question
-      model_name = ask("Enter Name of model") { |q| q.default = "Post" }
-      model_table_name = ask("Enter Table Name of model") { |q| q.default = "blog_post" }
+    def ask_questions
+      model = Saruman::Model.new(@options)
+      
+      model.name = ask("Enter Name of model") { |q| q.default = "Post" }
+      model.table_name = ask("Enter Table Name of model") { |q| q.default = "blog_post" }
       model_fields_input = ask("Enter Model Fields") { |q| q.default = "title:string active:boolean blog_id:integer:index" }
-      model_sql = parse_model_fields(model_fields_input, model_table_name)
-      @question_answer = {:model_name => model_name, :model_name_lower => model_name.downcase, :model_table_name => model_table_name, :sql => model_sql}
-      @question_answer
+
+      model.sql = parse_model_fields(model_fields_input, model.table_name)
+      # @question_answer = {:model_name => model_name, :model_name_lower => model_name.downcase, :model_table_name => model_table_name, :sql => model_sql}
+      
+      say("Would you like to create a collection model?")
+      choose do |menu|
+        menu.choice(:yes) { model.collection = true }
+        menu.choice(:no) { model.collection  = false }
+      end
+      
+      @question_answer = model
     end
     
     def output
@@ -334,6 +423,29 @@ module Saruman
       sql
     end
     
+  end
+  
+  class Model
+    include Virtus
+    include BuilderInstanceBase
+    attribute :name, Capitalize
+    attribute :name_lower, String, :default => lambda { |model,attribute| model.name.downcase }
+    attribute :table_name, Downcase
+    attribute :sql, String
+    attribute :collection, Boolean
+    
+    def klass_name
+      "#{combined_namespace}_Model_#{name}"
+    end
+    
+    def resource_model_klass_name
+      "#{combined_namespace}_Model_Mysql4_#{name}"
+    end
+    
+    def collection_model_klass_name
+      "#{combined_namespace}_Model_Mysql4_#{name}_Collection"
+    end  
+
   end
   
   class ModelBuilderField
@@ -402,7 +514,7 @@ module Saruman
     def set_config_models_resource_entities_xml
       xml = ""
       models.each do |model|
-        xml << "<#{model[:model_name_lower]}><table>#{model[:model_table_name]}</table></#{model[:model_name_lower]}>\n"
+        xml << "<#{model.name_lower}><table>#{model.table_name}</table></#{model.name_lower}>\n"
       end
       return xml
     end
@@ -494,11 +606,15 @@ module Saruman
     include XmlBuilderBase
     attribute :controllers, Array
     attribute :config_frontend_routers_name_xml, String
+    attribute :config_frontend_layout_xml, String
+    attribute :config_global_blocks_xml, String
     
     def initialize(controllers, generator)
       @controllers = controllers
       @generator = generator
       @config_frontend_routers_name_xml = set_config_frontend_routers_name_xml
+      @config_frontend_layout_xml = set_config_frontend_layout_xml
+      @config_global_blocks_xml = set_config_global_blocks_xml
     end
     
     def set_config_frontend_routers_name_xml
@@ -510,6 +626,30 @@ module Saruman
           <frontName>#{controller_front_name}</frontName>
         </args>  
       </#{name_lower}>
+    "
+      return xml
+    end
+    
+    def set_config_frontend_layout_xml
+      xml="
+      <layout>
+        <updates>
+          <#{name_lower}>
+            <file>#{name_lower}.xml</file>
+          </#{name_lower}>
+        </updates>
+      </layout>
+    "
+      return xml
+    end
+    
+    def set_config_global_blocks_xml
+      xml="
+      <blocks>
+          <#{name_lower}>
+            <class>#{block_klass_name}</class>
+          </#{name_lower}>
+      </blocks>
     "
       return xml
     end

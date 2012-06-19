@@ -2,7 +2,7 @@
   <class><%= resource_model_klass_name %></class>
   <entities>
     <% models.each do |model| %>
-    <<%= model[:model_name_lower] %>><table><%= model[:model_table_name] %></table></<%= model[:model_name_lower] %>>
+    <<%= model.name_lower %>><table><%= model.table_name %></table></<%= model.name_lower %>>
     <% end %>
     
   </entities>
