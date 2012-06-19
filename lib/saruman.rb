@@ -91,6 +91,14 @@ module Saruman
       "#{global_config_basepath}#{combined_namespace}.xml"
     end
     
+    def controller_block_path
+      "#{extension_base_path}Block/"
+    end
+    
+    def controller_block_file_path(controller_name)
+      "#{controller_block_path}#{controller_name.capitalize}.php"      
+    end  
+    
     def app_design_frontend_base_path
       newer_magento_base_path = "#{Dir.pwd}/app/design/frontend/base/default/"
       older_magento_base_path = "#{Dir.pwd}/app/design/frontend/default/default/"

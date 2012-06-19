@@ -68,8 +68,12 @@ module Saruman
         controllers.each do |controller|
           @controller = controller
           template("Controller.php", "#{controller_path}#{@controller.name}Controller.php")
+          
           if controller.create_views
             empty_directory(controller_view_path(@controller.name_lower)) unless File.directory?(controller_view_path(@controller.name_lower))
+            empty_directory(controller_block_path) unless File.directory?(controller_block_path)
+            @controller_block_klass_name = "#{combined_namespace}_Block_#{@controller.name.capitalize}"
+            template("Block.php", controller_block_file_path(@controller.name))
             controller.actions.each do |action|
               @action = action
               @kontroller_front_name = controller_front_name
